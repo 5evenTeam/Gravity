@@ -1,0 +1,14 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C++ object and build artifacts
+*.o
+*.obj
+*.pdb
+*.ilk
+
+# Temporary / OS files
+.DS_Store
+Thumbs.db
