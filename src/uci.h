@@ -9,6 +9,7 @@ class UCI {
 public:
     UCI();
     void loop();
+    void run_benchmark();
 
 private:
     Board board;

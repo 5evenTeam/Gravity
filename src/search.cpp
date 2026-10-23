@@ -49,7 +49,14 @@ void Searcher::stop() {
 
 bool Searcher::should_stop() {
     if (info.stopped) return true;
-    if ((info.nodes.load(std::memory_order_relaxed) & 2047) == 0) {
+    const U64 nodes = info.nodes.load(std::memory_order_relaxed);
+    // A node-limited UCI search must not wait for the periodic clock check;
+    // otherwise `go nodes 1` could search thousands of nodes.
+    if (limits.max_nodes > 0 && nodes >= static_cast<U64>(limits.max_nodes)) {
+        info.stopped = true;
+        return true;
+    }
+    if ((nodes & 2047) == 0) {
         if (limits.time_ms > 0) {
             auto now = std::chrono::steady_clock::now();
             long long elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - info.start_time).count();
@@ -57,10 +64,6 @@ bool Searcher::should_stop() {
                 info.stopped = true;
                 return true;
             }
-        }
-        if (limits.max_nodes > 0 && info.nodes.load(std::memory_order_relaxed) >= static_cast<U64>(limits.max_nodes)) {
-            info.stopped = true;
-            return true;
         }
     }
     return false;
@@ -107,14 +110,27 @@ int Searcher::quiescence(Board& board, int alpha, int beta, int ply, WorkerData&
 
     if (ply > info.seldepth) info.seldepth = ply;
 
+    // A static evaluation while the side to move is in check is not a valid
+    // quiescent position. Search every legal evasion (including quiet king
+    // moves and interpositions) instead of only captures.
+    bool in_check = board.in_check();
     int stand_pat = Eval::evaluate(board);
-    if (stand_pat >= beta) return beta;
-    if (stand_pat > alpha) alpha = stand_pat;
+    if (!in_check) {
+        if (stand_pat >= beta) return beta;
+        if (stand_pat > alpha) alpha = stand_pat;
+    }
 
     if (ply >= 127) return stand_pat;
 
     MoveList list;
-    MoveGen::generate_legal_captures(board, list);
+    if (in_check) {
+        MoveGen::generate_legal_moves(board, list);
+    } else {
+        MoveGen::generate_legal_captures(board, list);
+    }
+    if (in_check && list.count == 0) {
+        return -MATE_SCORE + ply;
+    }
     score_moves(board, list, NULL_MOVE, ply, wd);
 
     for (int i = 0; i < list.count; ++i) {
@@ -122,7 +138,7 @@ int Searcher::quiescence(Board& board, int alpha, int beta, int ply, WorkerData&
         Move m = list.moves[i];
 
         // Delta pruning: If static eval + Queen value is still below alpha, skip
-        if (stand_pat + 1025 < alpha && !m.is_promotion()) {
+        if (!in_check && stand_pat + 1025 < alpha && !m.is_promotion()) {
             continue;
         }
 

@@ -52,7 +52,8 @@ void UCI::parse_go(std::istringstream& ss) {
     limits.max_nodes = -1;
     limits.infinite = false;
 
-    int wtime = -1, btime = -1, winc = 0, binc = 0, movetime = -1, depth = -1;
+    int wtime = -1, btime = -1, winc = 0, binc = 0, movetime = -1;
+    int depth = -1, nodes = -1, movestogo = 0;
     std::string token;
 
     while (ss >> token) {
@@ -62,19 +63,28 @@ void UCI::parse_go(std::istringstream& ss) {
         else if (token == "binc") ss >> binc;
         else if (token == "movetime") ss >> movetime;
         else if (token == "depth") ss >> depth;
+        else if (token == "nodes") ss >> nodes;
+        else if (token == "movestogo") ss >> movestogo;
         else if (token == "infinite") limits.infinite = true;
     }
 
     if (movetime > 0) {
         limits.time_ms = movetime;
-    } else if (board.turn() == WHITE && wtime > 0) {
-        limits.time_ms = std::max(20, (wtime / 25) + (winc / 2));
-    } else if (board.turn() == BLACK && btime > 0) {
-        limits.time_ms = std::max(20, (btime / 25) + (binc / 2));
+    } else if (!limits.infinite) {
+        const int remaining = board.turn() == WHITE ? wtime : btime;
+        const int increment = board.turn() == WHITE ? winc : binc;
+        if (remaining > 0) {
+            const int moves_left = movestogo > 0 ? movestogo : 25;
+            const int allocation = (remaining / moves_left) + (increment * 3 / 4);
+            limits.time_ms = std::max(20, std::min(allocation, std::max(20, remaining - 25)));
+        }
     }
 
     if (depth > 0) {
         limits.depth = depth;
+    }
+    if (nodes > 0) {
+        limits.max_nodes = nodes;
     }
 
     // Check opening book first
@@ -100,16 +110,18 @@ void UCI::parse_setoption(std::istringstream& ss) {
     }
     ss >> value;
 
-    if (name == "Hash") {
+    if (name == "Clear Hash") {
+        g_tt.clear();
+    } else if (name == "Hash" && !value.empty()) {
         int mb = std::stoi(value);
         g_tt.resize(std::max(1, std::min(mb, 2048)));
-    } else if (name == "UCI_Elo") {
+    } else if (name == "UCI_Elo" && !value.empty()) {
         limits.elo = std::max(800, std::min(std::stoi(value), 4000));
-    } else if (name == "UCI_LimitStrength") {
+    } else if (name == "UCI_LimitStrength" && !value.empty()) {
         limits.limit_strength = (value == "true" || value == "1");
-    } else if (name == "OwnBook") {
+    } else if (name == "OwnBook" && !value.empty()) {
         own_book = (value == "true" || value == "1");
-    } else if (name == "Threads") {
+    } else if (name == "Threads" && !value.empty()) {
         limits.num_threads = std::max(1, std::min(std::stoi(value), 64));
     }
 }
@@ -151,6 +163,11 @@ void UCI::run_perft(int depth) {
               << (ms > 0 ? (total_nodes * 1000) / ms : 0) << " nps)\n" << std::endl;
 }
 
+void UCI::run_benchmark() {
+    board.set_fen(START_FEN);
+    run_perft(5);
+}
+
 void UCI::loop() {
     std::string line;
     while (std::getline(std::cin, line)) {
@@ -167,6 +184,7 @@ void UCI::loop() {
             std::cout << "option name UCI_LimitStrength type check default false" << std::endl;
             std::cout << "option name OwnBook type check default true" << std::endl;
             std::cout << "option name Threads type spin default 4 min 1 max 64" << std::endl;
+            std::cout << "option name Clear Hash type button" << std::endl;
             std::cout << (cmd == "udi" ? "udiok" : "uciok") << std::endl;
         } else if (cmd == "isready") {
             std::cout << "readyok" << std::endl;

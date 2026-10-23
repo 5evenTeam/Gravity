@@ -81,6 +81,16 @@ Benchmark move generation:
 perft 5
 ```
 
+## Verification
+
+After building, run the UCI regression checks. They verify the UCI handshake,
+search response, the standard start-position `perft 3` count (8,902), and
+node-limited search.
+
+```bash
+python -m unittest discover -s tests -v
+```
+
 ## License
 
 MIT

@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
         if (arg == "--bench" || arg == "bench") {
             std::cout << "Gravity benchmark..." << std::endl;
             UCI uci;
-            std::istringstream ss("perft 5");
+            uci.run_benchmark();
             return 0;
         } else if (arg == "--version" || arg == "-v") {
             std::cout << "Gravity 4.0" << std::endl;
