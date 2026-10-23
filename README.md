@@ -1,69 +1,86 @@
 # Gravity
 
-<p align="center">
-  <img src="logo.png" width="220" alt="Gravity Chess 4000 Logo" style="border-radius: 24px; box-shadow: 0 10px 30px rgba(59,130,246,0.6);">
-</p>
+A chess engine written in C++ with 64-bit bitboards, alpha-beta search, and UCI protocol support. Includes a local web interface with game clocks, analysis tools, and optional cloud evaluation integration.
 
-<p align="center">
-  <b>Supercomputer AI Chess Engine | Max 4000 ELO | Multi-Threaded Lazy SMP | UCI & UDI</b>
-</p>
+![Gravity Logo](logo.png)
 
----
+## Overview
 
-## Features
+Gravity is a UCI-compliant chess engine featuring bitboard move generation, tapered piece-square evaluation, and parallel search using Lazy SMP.
 
-### 1. Incredibly Smart Search & Evaluation (Local Engine)
-- **64-bit Bitboard Engine**: Ultra-fast bitwise operations for piece movement and attacks.
-- **Lazy SMP Multi-Threading**: Multi-threaded parallel search (`Threads` option supporting up to 64 CPU cores). Searches over 7.6+ million nodes/sec on modern multi-core processors.
-- **Search Algorithm**:
-  - Negamax with Alpha-Beta Pruning
+### Engine Details
+- **Representation**: 64-bit bitboards with ray-cast sliding attacks
+- **Search**:
+  - Negamax with alpha-beta pruning
   - Principal Variation Search (PVS)
-  - Iterative Deepening with dynamic Aspiration Windows
-  - Quiescence Search with MVV-LVA (Most Valuable Victim - Least Valuable Attacker)
-  - Transposition Table with 64-bit Zobrist Hashing (configurable up to 2048 MB)
-  - Null Move Pruning with adaptive verification
-  - Late Move Reductions (LMR)
-  - Reverse Futility Pruning & Futility Pruning
-  - Killer Move Heuristic (2 plies up to 128 plies) and History Heuristics
-  - Check Extensions and 3-fold repetition / 50-move rule detection
-- **Evaluation Function**:
-  - PeSTO Piece-Square Tables (Tapered evaluation interpolating opening/middlegame and endgame phases)
-  - Full Piece Mobility evaluation for Knights, Bishops, Rooks, and Queens
-  - King Shelter & storm evaluation with open-file penalties
-  - Pawn Structure evaluation (passed pawns, isolated pawns, doubled pawns)
-  - Piece mobility & activity (bishop pair bonus, rooks on open and semi-open files)
+  - Iterative deepening with aspiration windows
+  - Quiescence search with MVV-LVA move ordering
+  - Transposition table with 64-bit Zobrist hashing
+  - Null-move pruning and late move reductions (LMR)
+  - Reverse futility pruning and killer move heuristics (2 plies)
+  - Multi-threading via Lazy SMP
+- **Evaluation**:
+  - PeSTO piece-square tables with game-phase interpolation
+  - Piece mobility for knights, bishops, rooks, and queens
+  - Pawn structure evaluation (passed, isolated, and doubled pawns)
+  - King shelter and file safety penalties
+- **Protocols**: Full UCI compliance (also accepts `udi` alias)
 
-### 2. Internet Super-Brain (4000 ELO Max Setting)
-- **Lichess Cloud Evaluation**: Directly queries deep cloud evaluations (**Stockfish 19** up to depth 70+) for superhuman positional understanding.
-- **Syzygy 7-Piece Endgame Tablebases**: In positions with 7 or fewer pieces, the engine connects to online tablebases to play 100% mathematically optimal winning or drawing moves with exact Distance-To-Mate (DTM).
-- **Opening Recognition**: Dynamic ECO code and opening identifier for all major chess openings (Ruy Lopez, Sicilian, French, Italian Game, Scotch, Queen's Gambit, King's Indian, Caro-Kann, London System, English, Reti, etc.).
+### Web Interface
+- Board with legal move indicators and drag-and-drop
+- Move history in standard algebraic notation
+- Configurable game clocks (Bullet, Blitz, Rapid, Casual)
+- Live evaluation bar and best-move indicator
+- PGN export and FEN import/export
+- Multiple board color schemes
 
-### 3. Interactive Modern Web GUI & Game Features
-- **Live Game Clocks / Timers**: Support for Bullet (1+1), Blitz (3+2, 5 min), Rapid (10+5), or Casual untimed games with low-time alerts and flag detection.
-- **Best Move Arrow Hint**: Visual SVG arrow dynamically drawn on the board showing the engine's suggested best move.
-- **PGN Export**: 1-click download of full standard `.pgn` game records.
-- **Custom FEN Loading**: Paste any FEN or puzzle position directly into the board.
-- **Board Themes**: Switch between Oceanic Modern, Classic Wood, Emerald Green, and Cyber Neon.
-- **Strict FIDE Rules**: Powered by embedded `chess.min.js` validator with zero illegal moves allowed.
+## Requirements
 
-### 3. UCI & UDI Protocol Compliance
-- Supports standard **Universal Chess Interface (UCI)** and recognizes **UDI** as an alias!
-- Usable in external chess GUIs like **Arena, CuteChess, Fritz, ChessBase, BanksiaGUI**, or online bot interfaces.
-- Standard options:
-  - `UCI_Elo` (800 to 4000)
-  - `UCI_LimitStrength` (true/false)
-  - `Hash` (table size in MB)
-  - `OwnBook` (built-in opening book toggle)
+- **Engine**: C++20 compiler (`g++`, `clang++`, or MSVC)
+- **Web UI**: Python 3.8+ with `flask`
 
-### 4. Interactive Modern Web GUI
-- Play human vs AI, watch AI vs AI self-play, or analyze positions.
-- Live interactive chessboard with drag & drop, move animations, and Web Audio API synthesized sound effects.
-- Dynamic Evaluation Bar with numerical centipawn advantage or Mate-in-X indicator.
-- Live Engine Dashboard displaying Depth, Speed (NPS), Nodes, Evaluation Source, and Thinking Line (PV).
-- ELO slider to scale difficulty from club player up to the 4000 ELO supercomputer.
----
-### 5. Start
-- Go To https://github.com/5evenTeam/Gravity/releases/tag/v4.0.0
-- Download The Gravity.zip File
-- Extract It And Run run_gui.bat
-- Start Playing Against Gravity On localhost:5000
+## Build
+
+Compile the engine with MinGW or g++:
+
+```bash
+g++ -O3 -std=c++20 -march=native src/*.cpp -o gravity.exe
+```
+
+Or run `build.bat` on Windows.
+
+## Usage
+
+### Web Interface
+Start the local server and open `http://localhost:5000`:
+
+```bash
+python gravity_server.py
+```
+
+Or run `run_gui.bat`.
+
+### Command Line / UCI
+Run the engine directly or connect it to any chess GUI (Arena, CuteChess, Banksia, Fritz):
+
+```bash
+./gravity.exe
+```
+
+Example UCI session:
+```
+uci
+isready
+position startpos moves e2e4 e7e5
+go depth 10
+quit
+```
+
+Benchmark move generation:
+```
+perft 5
+```
+
+## License
+
+MIT
