@@ -1,6 +1,12 @@
 # Gravity Chess 4000 ♟️⚡
 
-**Gravity Chess 4000** is a high-performance chess engine and interactive chess suite built for extreme intelligence (up to **4000 ELO**), blazing speed (>28 million nodes/second local move generation), universal protocol support (**UCI & UDI** like Stockfish), and **Internet Super-Brain integration** (Stockfish 19 depth 70 cloud evaluation + Syzygy 7-piece endgame tablebases).
+<p align="center">
+  <img src="logo.png" width="220" alt="Gravity Chess 4000 Logo" style="border-radius: 24px; box-shadow: 0 10px 30px rgba(59,130,246,0.6);">
+</p>
+
+<p align="center">
+  <b>Supercomputer AI Chess Engine | Max 4000 ELO | Multi-Threaded Lazy SMP | UCI & UDI</b>
+</p>
 
 ---
 
