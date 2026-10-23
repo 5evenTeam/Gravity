@@ -1,4 +1,4 @@
-# Gravity Chess 4000 ♟️⚡
+# Gravity
 
 <p align="center">
   <img src="logo.png" width="220" alt="Gravity Chess 4000 Logo" style="border-radius: 24px; box-shadow: 0 10px 30px rgba(59,130,246,0.6);">
@@ -10,7 +10,7 @@
 
 ---
 
-## 🌟 Key Features
+## Features
 
 ### 1. Incredibly Smart Search & Evaluation (Local Engine)
 - **64-bit Bitboard Engine**: Ultra-fast bitwise operations for piece movement and attacks.
@@ -61,42 +61,9 @@
 - Dynamic Evaluation Bar with numerical centipawn advantage or Mate-in-X indicator.
 - Live Engine Dashboard displaying Depth, Speed (NPS), Nodes, Evaluation Source, and Thinking Line (PV).
 - ELO slider to scale difficulty from club player up to the 4000 ELO supercomputer.
-
 ---
-
-## 🚀 Quick Start
-
-### 1. Launch the Interactive Web GUI
-Simply double-click:
-```bat
-run_gui.bat
-```
-Or run from PowerShell/Terminal:
-```powershell
-python gravity_server.py
-```
-Then open your browser at **`http://localhost:5000`**.
-
----
-
-### 2. Run the Engine via UCI / UDI
-Double-click:
-```bat
-run_engine_uci.bat
-```
-Or execute:
-```powershell
-.\gravity.exe
-```
-
----
-
-### 3. Recompiling the C++ Engine
-To recompile `gravity.exe` from source:
-```bat
-build.bat
-```
-Or via g++:
-```powershell
-g++ -O3 -std=c++20 -march=native src/*.cpp -o gravity.exe
-```
+### 5. Start
+- Go To https://github.com/5evenTeam/Gravity/releases/tag/v4.0.0
+- Download The Gravity.zip File
+- Extract It And Run run_gui.bat
+- Start Playing Against Gravity On localhost:5000
